@@ -89,13 +89,71 @@ def depthFirstSearch(problem: SearchProblem) -> List[Directions]:
     print("Is the start a goal?", problem.isGoalState(problem.getStartState()))
     print("Start's successors:", problem.getSuccessors(problem.getStartState()))
     """
-    "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+
+    # FOR DEPTH FIRST SEARCH: USE STACK
+
+    # Stack for Depth First Search is Last In, First Out (LIFO) util.py has Stack and Queue classes
+    stack = util.Stack()
+    # Track nodes to avoid cycles
+    visited = set()
+    # Stack stores start state and the path(array) to that state
+    stack.push((problem.getStartState(), []))
+    
+    while not stack.isEmpty():
+        # Pop the most recently added state and add to path / make current_state(DFS)
+        current_state, path = stack.pop()
+        # Skip if visited
+        if current_state in visited:
+            continue # Loop to next iteration
+        # Mark current state visited
+        visited.add(current_state)
+        # Check if at goal state
+        if problem.isGoalState(current_state):
+            return path
+        # Add all children to the stack
+        for successor, action, cost in problem.getSuccessors(current_state):
+            if successor not in visited:
+                # If the successor has not been visited, create new path by adding current action
+                new_path = path + [action]
+                stack.push((successor, new_path))
+                
+    # Return empty list because no solution would have been found
+    return []
 
 def breadthFirstSearch(problem: SearchProblem) -> List[Directions]:
     """Search the shallowest nodes in the search tree first."""
-    "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+
+    # FOR BREADTH FIRST SEARCH: USE QUEUE
+
+    # Queue for Breadth First Search is First In, First Out (FIFO)
+    queue = util.Queue()
+    # Track nodes to avoid cycles
+    visited = set()
+    # Queue stores start state and the path(array) to that state
+    queue.push((problem.getStartState(), []))
+    
+    while not queue.isEmpty():
+        # Pop the oldest added state and add to path / make current_state (BFS)
+        current_state, path = queue.pop()
+        # Skip if visited
+        if current_state in visited:
+            continue # Loop to next iteration
+        # Mark current state visited
+        visited.add(current_state)
+
+        # Check if at goal state
+        if problem.isGoalState(current_state):
+            return path
+
+        # Add all children to the queue
+        for successor, action, cost in problem.getSuccessors(current_state):
+            if successor not in visited:
+                # If the successor has not been visited, create new path by adding current action
+                new_path = path + [action]
+                queue.push((successor, new_path))
+                
+    # Return empty list because no solution would have been found
+    return []
 
 def uniformCostSearch(problem: SearchProblem) -> List[Directions]:
     """Search the node of least total cost first."""
