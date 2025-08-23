@@ -96,7 +96,7 @@ def depthFirstSearch(problem: SearchProblem) -> List[Directions]:
     stack = util.Stack()
     # Track nodes to avoid cycles
     visited = set()
-    # Stack stores start state and the path(array) to that state
+    # Stack stores start state in the data structure with the path
     stack.push((problem.getStartState(), []))
     
     while not stack.isEmpty():
@@ -111,7 +111,7 @@ def depthFirstSearch(problem: SearchProblem) -> List[Directions]:
         if problem.isGoalState(current_state):
             return path
         # Add all children to the stack
-        for successor, action, cost in problem.getSuccessors(current_state):
+        for successor, action, stepCost in problem.getSuccessors(current_state):
             if successor not in visited:
                 # If the successor has not been visited, create new path by adding current action
                 new_path = path + [action]
@@ -129,7 +129,7 @@ def breadthFirstSearch(problem: SearchProblem) -> List[Directions]:
     queue = util.Queue()
     # Track nodes to avoid cycles
     visited = set()
-    # Queue stores start state and the path(array) to that state
+    # Queue stores start state in the data structure with the path
     queue.push((problem.getStartState(), []))
     
     while not queue.isEmpty():
@@ -146,7 +146,7 @@ def breadthFirstSearch(problem: SearchProblem) -> List[Directions]:
             return path
 
         # Add all children to the queue
-        for successor, action, cost in problem.getSuccessors(current_state):
+        for successor, action, stepCost in problem.getSuccessors(current_state):
             if successor not in visited:
                 # If the successor has not been visited, create new path by adding current action
                 new_path = path + [action]
@@ -157,8 +157,46 @@ def breadthFirstSearch(problem: SearchProblem) -> List[Directions]:
 
 def uniformCostSearch(problem: SearchProblem) -> List[Directions]:
     """Search the node of least total cost first."""
-    "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    
+    # FOR UNIFORM COST SEARCH: USE PRIORITY QUEUE
+    # optimal solutions by always expanding the lowest-cost node first
+    
+    # Priority Queue for Uniform Cost Search orders by path cost (lower cost = higher priority)
+    priority_queue = util.PriorityQueue()
+    
+    # Track visited states to avoid redundant exploration
+    visited = set()
+    # Priority queue stores start state with path and cost ((state, path), cost)
+    priority_queue.push((problem.getStartState(), []), 0)
+    
+    while not priority_queue.isEmpty():
+        # Pop state with lowest accumulated cost
+        current_state, path = priority_queue.pop()
+        # Skip if visited
+        if current_state in visited:
+            continue # Loop to next iteration
+        # Mark current state visited
+        visited.add(current_state)
+        
+        # Check if at goal state
+        if problem.isGoalState(current_state):
+            return path
+        
+        # Add all children to the priority queue
+        for successor, action, stepCost in problem.getSuccessors(current_state):
+            if successor not in visited:
+                # If the successor has not been visited, create new path by adding current action
+                new_path = path + [action]
+                
+                # Calculate total cost from start to successor:
+                # Cost of current path + cost of this step
+                new_cost = problem.getCostOfActions(path) + stepCost
+                
+                # Add successor to queue with its path and total cost as priority
+                priority_queue.push((successor, new_path), new_cost)
+                
+    # Return empty list because no solution would have been found
+    return []
 
 def nullHeuristic(state, problem=None) -> float:
     """
@@ -169,8 +207,60 @@ def nullHeuristic(state, problem=None) -> float:
 
 def aStarSearch(problem: SearchProblem, heuristic=nullHeuristic) -> List[Directions]:
     """Search the node that has the lowest combined cost and heuristic first."""
-    "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    
+    # FOR A* SEARCH: USE PRIORITY QUEUE WITH f(n) = g(n) + h(n)
+    # f(n) = g(n) + h(n) where (lower f = higher priority):
+    # g(n) = actual cost from start to current node
+    # h(n) = heuristic estimate from current node to goal
+    # f(n) = estimated total cost from start to goal through current node
+    priority_queue = util.PriorityQueue()
+    
+    # Use dictionary instead of set to track best cost to reach each state
+    # This allows revisiting states if we find a better (cheaper) path
+    visited = {}
+    
+    # Get starting state and calculate initial heuristic
+    start_state = problem.getStartState()
+    start_h_cost = heuristic(start_state, problem)
+    # Start has g_cost=0, so f_cost = 0 + h(start) = h(start)
+    priority_queue.push((start_state, [], 0), start_h_cost)
+    
+    while not priority_queue.isEmpty():
+        # Pop state with lowest f(n) = g(n) + h(n) value
+        # Extract: current state, path to reach it, and actual cost g(n)
+        current_state, path, g_cost = priority_queue.pop()
+        
+        # Skip if we've reached this state before with equal or better cost (allows finding better paths to same state)
+        if current_state in visited and visited[current_state] <= g_cost:
+            continue # Jump to next iteration of while loop
+            
+        # Record this as the best known cost to reach this state
+        visited[current_state] = g_cost
+        
+        # Check if at goal state
+        if problem.isGoalState(current_state):
+            return path
+        
+        # Add all children to the priority queue
+        for successor, action, stepCost in problem.getSuccessors(current_state):
+            # Calculate new g(n) for successor: current cost + step cost
+            new_g_cost = g_cost + stepCost
+            
+            # Only add successor if:
+            # We haven't seen this state before, OR We found a better (lower cost) path to this state
+            if successor not in visited or visited[successor] > new_g_cost:
+                # Create path to successor by appending action to current path
+                new_path = path + [action]
+                # Calculate h(n): heuristic estimate from successor to goal
+                h_cost = heuristic(successor, problem)
+                # Calculate f(n) = g(n) + h(n): total estimated cost
+                f_cost = new_g_cost + h_cost
+                
+                # Add successor to queue: (state, path, g_cost) with f_cost 
+                priority_queue.push((successor, new_path, new_g_cost), f_cost)
+                
+    # Return empty list because no solution would have been found
+    return []
 
 # Abbreviations
 bfs = breadthFirstSearch
