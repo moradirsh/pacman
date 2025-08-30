@@ -198,6 +198,59 @@ def uniformCostSearch(problem: SearchProblem) -> List[Directions]:
     # Return empty list because no solution would have been found
     return []
 
+"""
+extra implementation:
+def uniformCostSearch(problem: SearchProblem) -> List[Directions]:
+    #resource: https://www.geeksforgeeks.org/artificial-intelligence/uniform-cost-search-ucs-in-ai
+
+    #DATA STRUCTURE: PRIORITY QUEUE
+    priority_queue = util.PriorityQueue()
+
+    #Keep track of visited nodes and their costs using a dictionary instead of a set
+    visited = {}
+
+
+    #initial state and its path with starting cost of 0
+    start_state = problem.getStartState()
+    priority_queue.push((start_state, [], 0), 0)
+
+    #First check if start state is goal
+    if problem.isGoalState(start_state):
+        return path
+    
+    #Else enter the loop as long as priority queue is not empty
+    while not priority_queue.isEmpty():
+        # Pop the state with the lowest cost
+        current_state, path, curr_cost = priority_queue.pop()
+
+        # Check if at goal state
+        if problem.isGoalState(current_state):
+            return path
+        
+        # check if it was visited before and if stored cost of node is less than current cost
+        if current_state in visited and visited[current_state] <= curr_cost:
+            continue
+
+        else:
+            visited[current_state] = curr_cost
+        
+
+        # Expand successors
+        for successor, action, succ_cost in problem.getSuccessors(current_state):
+            
+            newpath = path + [action]
+            total_cost = curr_cost + succ_cost
+
+            #like before, check if successor has been visited and its stored cost is less than the total current cost
+            if successor in visited and visited[successor] <= total_cost:
+                continue
+
+            priority_queue.push((successor, newpath, total_cost), total_cost)
+
+# Return empty list because no solution found
+return []
+"""
+
 def nullHeuristic(state, problem=None) -> float:
     """
     A heuristic function estimates the cost from the current state to the nearest
